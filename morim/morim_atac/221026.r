@@ -110,7 +110,7 @@ res <- getBM(attributes = c("hgnc_symbol", "entrezgene_id"),
             mart = hd, useCache = FALSE) 
 res$entrezgene_id <- as.character(res$entrezgene_id)
 anno_BR_NEG_minus_WT_NEG_df <- anno_BR_NEG_minus_WT_NEG_df %>% full_join(res, by=c("geneId"="entrezgene_id"))
-fwrite(anno_BR_NEG_minus_BR_POS_df, "anno_BR_NEG_minus_BR_POS_df.tsv", sep="\t")
+fwrite(anno_BR_NEG_minus_WT_NEG_df, "anno_BR_NEG_minus_WT_NEG_df.tsv", sep="\t")
 
 
 ## BR_NEG_minus_BR_POS
@@ -172,43 +172,43 @@ kegg_enrichment_result <- enrichKEGG(
                             maxGSSize = 500,
                             use_internal_data = FALSE)
 
-df <- as.data.frame(ego_result) %>% arrange(qvalue)
-fwrite(df, "enrichGO_common.tsv", sep="\t")
-fwrite(as.data.frame(targ_res), "genes_common.tsv", sep="\t")
+# df <- as.data.frame(ego_result) %>% arrange(qvalue)
+# fwrite(df, "enrichGO_common.tsv", sep="\t")
+fwrite(as.data.frame(targ_res), "genes_common_BR_NEG_BR_POS_UP.tsv", sep="\t")
 
 ## atacとSeqに共通するもの
 # BR_NEG/WT_NEG でUP　して BR_NEG/BR_POS でUP
-seq_targ_genes <- intersect(BR_WT_up$V1, BR_BRPOS_up$V1)
-atac_targ_genes <- intersect(atac_BR_neg_WT_up$hgnc_symbol, atac_BR_neg_up$hgnc_symbol)
+# seq_targ_genes <- intersect(BR_WT_up$V1, BR_BRPOS_up$V1)
+# atac_targ_genes <- intersect(atac_BR_neg_WT_up$hgnc_symbol, atac_BR_neg_up$hgnc_symbol)
 
-inter_genes <- intersect(as.character(seq_targ_genes), as.character(atac_targ_genes))
-targ_res <- getBM(attributes = c("entrezgene_id","hgnc_symbol"), 
-            filters = "hgnc_symbol", values = inter_genes, 
-            mart = hd, useCache = FALSE) 
+# inter_genes <- intersect(as.character(seq_targ_genes), as.character(atac_targ_genes))
+# targ_res <- getBM(attributes = c("entrezgene_id","hgnc_symbol"), 
+#             filters = "hgnc_symbol", values = inter_genes, 
+#             mart = hd, useCache = FALSE) 
 
-ego_result <- enrichGO(gene    = targ_res$entrezgene_id,
-                #universe      = res$entrezgene_id,
-                OrgDb         = org.Hs.eg.db,
-                ont           = "ALL", #"BP","CC","MF","ALL"から選択
-                pAdjustMethod = "BH",
-                pvalueCutoff  = 0.5,
-                # qvalueCutoff  = 0.05, 
-                readable      = TRUE) #Gene IDを遺伝子名に変換
+# ego_result <- enrichGO(gene    = targ_res$entrezgene_id,
+#                 #universe      = res$entrezgene_id,
+#                 OrgDb         = org.Hs.eg.db,
+#                 ont           = "ALL", #"BP","CC","MF","ALL"から選択
+#                 pAdjustMethod = "BH",
+#                 pvalueCutoff  = 0.5,
+#                 # qvalueCutoff  = 0.05, 
+#                 readable      = TRUE) #Gene IDを遺伝子名に変換
 
 
-kegg_enrichment_result <- enrichKEGG(
-                            gene = targ_res$entrezgene_id,
-                            organism = "hsa",
-                            keyType = "kegg",
-                            pvalueCutoff = 0.5,
-                            pAdjustMethod = "BH",
-                            minGSSize = 10,
-                            maxGSSize = 500,
-                            use_internal_data = FALSE)
+# kegg_enrichment_result <- enrichKEGG(
+#                             gene = targ_res$entrezgene_id,
+#                             organism = "hsa",
+#                             keyType = "kegg",
+#                             pvalueCutoff = 0.5,
+#                             pAdjustMethod = "BH",
+#                             minGSSize = 10,
+#                             maxGSSize = 500,
+#                             use_internal_data = FALSE)
 
-# df <- as.data.frame(ego_result) %>% arrange(qvalue)
-# fwrite(df, "enrichGO_common.tsv", sep="\t")
-fwrite(as.data.frame(targ_res), "genes_common_wide.tsv", sep="\t")
+# # df <- as.data.frame(ego_result) %>% arrange(qvalue)
+# # fwrite(df, "enrichGO_common.tsv", sep="\t")
+# fwrite(as.data.frame(targ_res), "genes_common_wide.tsv", sep="\t")
 
 
 ## atacとSeqに共通するもの
@@ -237,11 +237,10 @@ kegg_enrichment_result <- enrichKEGG(
                             use_internal_data = FALSE)
 
 df <- as.data.frame(ego_result) %>% arrange(qvalue)
-fwrite(df, "enrichGO_common_WT.tsv", sep="\t")
+fwrite(df, "enrichGO_BR_NEG_WT_NEG_UP.tsv", sep="\t")
 df <- as.data.frame(kegg_enrichment_result) %>% arrange(qvalue)
-fwrite(df, "kegg_enrichment_result_common_WT.tsv", sep="\t")
-fwrite(as.data.frame(targ_res), "genes_common_WT.tsv", sep="\t")
-
+fwrite(df, "kegg_enrichment_result_BR_NEG_WT_NEG_UP.tsv", sep="\t")
+fwrite(as.data.frame(targ_res), "genes_BR_NEG_WT_NEG_UP.tsv", sep="\t")
 
 
 
