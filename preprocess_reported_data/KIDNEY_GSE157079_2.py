@@ -28,6 +28,7 @@ sc.pl.scatter(adata, x='total_counts', y='pct_counts_mt', show=False);     plt.s
 sc.pl.scatter(adata, x='total_counts', y='n_genes_by_counts', show=False); plt.savefig(f'{out_dir}/scatter2.png'); # plt.show()
 
 adata = adata[adata.obs.n_genes_by_counts < 10000, :]
+adata = adata[adata.obs.n_genes_by_counts > 1500, :]
 adata = adata[adata.obs.pct_counts_mt < 15, :]
 sc.pp.normalize_total(adata, target_sum=1e4)
 sc.pp.log1p(adata)
@@ -46,7 +47,8 @@ sc.tl.tsne(adata)
 sc.tl.umap(adata)
 sc.tl.leiden(adata)
 sc.pl.tsne(adata, color=['leiden', "clusters"], legend_loc="on data", show=False); plt.savefig(f'{out_dir}/tsne.png')
-sc.pl.umap(adata, color=['leiden', "clusters"], show=False); plt.savefig(f'{out_dir}/umap.png')
+sc.pl.umap(adata, color=['leiden', "clusters", "orig.ident", "n_genes_by_counts"], legend_loc="on data", ncols=1, show=False); plt.savefig(f'{out_dir}/umap.png')
+sc.pl.umap(adata[~adata.obs["barcodes"].str.contains("Ksp_")], color=['leiden', "clusters", "n_genes_by_counts"], legend_loc="on data", ncols=1, show=False); plt.savefig(f'{out_dir}/umap_adult.png')
 sc.tl.rank_genes_groups(adata, 'leiden', method='t-test')
 sc.pl.rank_genes_groups(adata, n_genes=25, sharey=False, show=False); plt.savefig(f'{out_dir}/rank_genes_groups.png')
 result = adata.uns['rank_genes_groups']
