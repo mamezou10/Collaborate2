@@ -60,6 +60,10 @@ for i in range(len(samples)):
     adatas = anndata.AnnData.concatenate(adatas, adata)
 
 
+adatas.layers["count"] = adatas.X.copy()
+
+
+
     
 plt.close("all")
 adata = adatas[1:,:].copy()
