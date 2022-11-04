@@ -4,7 +4,7 @@ import scanpy as sc
 import matplotlib.pyplot as plt
 import anndata
 
-out_dir = "/mnt/Donald/hoshino/2_kidney/221024/"
+out_dir = "/mnt/Donald/hoshino/2_kidney/221103/"
 # plt.savefig(f'{out_dir}/q_adata_markers.png');plt.close()
 
 CTL = sc.read_10x_h5("/mnt/Donald/hoshino/2_kidney/Mouse_kidney/scRNA/CellRanger_Output/Kidney_CTL/filtered_feature_bc_matrix.h5")
@@ -32,10 +32,10 @@ for i in range(len(samples)):
     sc.pl.scatter(adata, x='total_counts', y='n_genes_by_counts', show=False); plt.savefig(f'{out_dir}/scatter2_{sampleName}.png'); # plt.show()
     adata = adata[adata.obs.n_genes_by_counts > 2500, :]; adata
     adata = adata[adata.obs.n_genes_by_counts < 10000, :]; adata
-    adata = adata[adata.obs.pct_counts_mt < 20, :];       adata
+    adata = adata[adata.obs.pct_counts_mt < 40, :];       adata
     sc.pp.normalize_total(adata, target_sum=1e4)
     sc.pp.log1p(adata)
-    sc.pp.highly_variable_genes(adata, min_mean=0.0125, max_mean=3, min_disp=0.5)
+    sc.pp.highly_variable_genes(adata)#, min_mean=0.0125, max_mean=3, min_disp=0.5)
     sc.pl.highly_variable_genes(adata, show=False); plt.savefig(f'{out_dir}/highly_variable_genes_{sampleName}.png')
     #
     adata.raw = adata
