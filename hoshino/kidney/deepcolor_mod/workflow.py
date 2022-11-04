@@ -226,6 +226,7 @@ def make_top_act_ligands(cell_type, coexp_count_df, topn=3):
 def make_coexp_cc_df(ligand_adata, edge_df, role):
     sender = edge_df.cell1 if role == "sender" else edge_df.cell2
     receiver = edge_df.cell2 if role == "sender" else edge_df.cell1
+    import pdb; pdb.set_trace()
     coexp_df = pd.DataFrame(
         ligand_adata[sender].X *
         ligand_adata[receiver].layers['activity'],
@@ -245,6 +246,7 @@ def calculate_proximal_cell_communications(sc_adata, celltype_label, lt_df,
     sc_adata = sc_adata[sc_adata.obs.groupby(celltype_label).sample(celltype_sample_num, replace=True).index]
     sc_adata.obs_names_make_unique()
     celltypes = sc_adata.obs.loc[:, celltype_label].unique()
+    # import pdb; pdb.set_trace()
     # make edge_df
     edge_df = make_edge_df(sc_adata, celltype_label, sub_sample=False, exclude_reverse=False, edge_thresh=edge_thresh)
     # select edge df with cell1 as target
