@@ -11,7 +11,7 @@ library(RTCGA.mutations)
 library(tidyverse)
 library(data.table)
 library(TCGAbiolinks)
-library("janitor")
+library(janitor)
 library(ggplot2)
 library(ggpubr)
 
@@ -20,7 +20,7 @@ setwd("/mnt/Donald/morim_BRAF")
 # 変異があるかのデータ
 
 library(maftools)
-library(dplyr)
+
 query <- GDCquery(
     project = "TCGA-COAD", 
     data.category = "Simple Nucleotide Variation", 
@@ -71,28 +71,34 @@ coad_merge <- inner_join(meta, coad.merge, by=c("cases.0.submitter_id"="submitte
 # Expression
 #  "/Volumes/Bambi/Projects/morim_braf/analysis/220216"から
 exp <- fread("final.tsv")
-exp <- exp %>% mutate(muc1_state=case_when(
-    MUC1 >= mean(exp$MUC1) ~ "high",
+exp <- exp %>% mutate(MYC_state=case_when(
+    MYC >= mean(exp$MYC) ~ "high",
     TRUE ~ "low",)) 
 
-thre <- quantile(exp$MUC1, c(0,0.25,0.5,0.75,1.0))
-exp$MUC1_q <- cut(exp$MUC1, thre,
+thre <- quantile(exp$MYC, c(0,0.25,0.5,0.75,1.0))
+exp$MYC_q <- cut(exp$MYC, thre,
                 labels = c("0-25%","25-50%","50-75%","75-100%"),
                 include.lowest = TRUE)
 
 df <- coad.merge %>% filter(HGVSp_Short=="p.V640E") %>% inner_join(exp, by="submitter_id")
-TCGAanalyze_survival(df, "MUC1_q",
-        main = "TCGA Set\n MUC1_q\n BRAF mutatnt",height = 10, width=10, filename = "survival_MUC1_q.png")
+TCGAanalyze_survival(df, "MYC_q",
+        main = "TCGA Set\n MYC_q\n BRAF mutatnt",height = 10, width=10, filename = "survival_MYC_q.png")
 
 
-df <- coad.merge %>% filter(HGVSp_Short=="p.V640E") %>% filter(HGVSp_Short=="p.V640E") %>% inner_join(exp, by="submitter_id")
-TCGAanalyze_survival(df, "MUC1_q",
-        main = "TCGA Set\n MUC1_q\n BRAF mutatnt",height = 10, width=10, filename = "survival_MUC1_q.png")
+exp$NOTCH_q <- cut(exp$NOTCH1, thre,
+                labels = c("0-25%","25-50%","50-75%","75-100%"),
+                include.lowest = TRUE)
 
+df <- coad.merge %>% filter(HGVSp_Short=="p.V640E") %>% inner_join(exp, by="submitter_id")
+TCGAanalyze_survival(df, "NOTCH_q",
+        main = "TCGA Set\n NOTCH_q\n BRAF mutatnt",height = 10, width=10, filename = "survival_NOTCH_q.png")
 
-
-
-
+exp <- exp %>% mutate(NOTCH1_state=case_when(
+    NOTCH1 >= mean(exp$NOTCH1) ~ "high",
+    TRUE ~ "low",)) 
+df <- coad.merge %>% filter(HGVSp_Short=="p.V640E") %>% inner_join(exp, by="submitter_id")
+TCGAanalyze_survival(df, "NOTCH1_state",
+        main = "TCGA Set\n NOTCH_q\n BRAF mutatnt",height = 10, width=10, filename = "survival_NOTCH_50.png")
 
 
 
