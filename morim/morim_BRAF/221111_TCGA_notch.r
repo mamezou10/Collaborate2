@@ -102,7 +102,7 @@ library(ggsignif)
 
 # Expression
 exp <- fread("final.tsv")
-exp$BRAF_mut
+# exp$BRAF_mut
 
 df <- coad.merge %>% full_join(exp, by="submitter_id")
 df <- df  %>% mutate(BRAF_mut=case_when(
@@ -110,6 +110,7 @@ df <- df  %>% mutate(BRAF_mut=case_when(
                 submitter_id %in% patients_wt$submitter_id ~ "WT",
                 TRUE ~ "NA"))
 
+df <- df %>% distinct(submitter_id, .keep_all=TRUE)
 # GDCportalからcountデータをDL（biolinkだと進まない）
 # files <- list.files("/mnt/Bambi/Projects/morim_braf/analysis/220206",recursive=T, pattern=".FPKM.txt",full.names=T)
 
