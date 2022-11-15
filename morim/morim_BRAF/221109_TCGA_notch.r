@@ -25,7 +25,7 @@ query <- GDCquery(
     project = "TCGA-COAD", 
     data.category = "Simple Nucleotide Variation", 
     access = "open", 
-    #legacy = FALSE, 
+    #legacy = FALSE, /mnt/Donald/morim_BRAF/kari.png
     # sample.type = "Primary Tumor",
     # data.type = "Annotated Somatic Mutation", 
     #workflow.type = "Aliquot Ensemble Somatic Variant Merging and Masking"
@@ -45,7 +45,12 @@ maf$submitter_id=str_sub(maf$Tumor_Sample_Barcode, start=1,end=12)
 # maf <-maf %>% filter(HGVSp_Short=="p.V600E")
 # maf <-maf %>% filter(HGVSp_Short=="p.V640E")
 
+
+maf_WT <-maf %>% filter(Hugo_Symbol!="BRAF")
+maf_WT$HGVSp_Short <- "WT"
 maf <-maf %>% filter(Hugo_Symbol=="BRAF")
+
+maf <- rbind(maf_WT, maf)
 
 # 生存日数などのデータ
 clin <- GDCquery_clinic("TCGA-COAD", "clinical")
@@ -67,10 +72,26 @@ coad_merge <- inner_join(meta, coad.merge, by=c("cases.0.submitter_id"="submitte
 
 
 
-
 # Expression
 #  "/Volumes/Bambi/Projects/morim_braf/analysis/220216"から
 exp <- fread("final.tsv")
+
+df <- coad.merge %>% inner_join(exp, by="submitter_id")
+g <-  ggplot(df, aes(x = HGVSp_Short, y = MUC1)) +geom_boxplot() 
+ggsave("kari.png")
+
+df <- coad.merge.all %>% inner_join(exp, by="submitter_id") %>% select("HGVSp_Short", "MUC1")
+g <-  ggplot(df, aes(x = HGVSp_Short, y = MUC1)) +geom_boxplot() 
+ggsave("kari.png")
+
+
+
+
+
+
+
+
+
 exp <- exp %>% mutate(MYC_state=case_when(
     MYC >= mean(exp$MYC) ~ "high",
     TRUE ~ "low",)) 
