@@ -47,6 +47,8 @@ for i in range(len(files)):
     exps.append(exp)
 
 
+exp[(exp.est_counts>0)&(exp.species=="mouse")]
+
 exp_total = exps[0]
 for i in range(1,len(files)):
     print(i)
