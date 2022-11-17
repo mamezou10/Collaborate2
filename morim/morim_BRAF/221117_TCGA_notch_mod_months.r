@@ -114,7 +114,7 @@ df_surv <- df_surv %>% mutate(days = ifelse(days>1100, 1100, days))
 sfit <- survfit(Surv(days, event) ~ NOTCH_half, data=df_surv[df_surv$BRAF_mut=="WT",])
 summary(sfit)
 g <- ggsurvplot(sfit, conf.int=FALSE, pval=TRUE, risk.table=TRUE, xscale = "d_m" ,break.time.by=365.25*0.5, xlim=c(0,1100),
-           legend.labs=c("low", "high"), legend.title="NOTCH1",  
+           legend.labs=c("low", "high"), legend.title="NOTCH1",  xlab="month",
            palette=c("dodgerblue2", "orchid2"), 
            title="Kaplan-Meier Curve for COAD", 
            risk.table.height=.3)
@@ -129,7 +129,7 @@ sfit <- survfit(Surv(days, event) ~ NOTCH_half, data=df_surv[df_surv$BRAF_mut=="
 summary(sfit)
 
 g <- ggsurvplot(sfit, conf.int=FALSE, pval=TRUE, risk.table=TRUE, xscale = "d_m" ,break.time.by=365.25*0.5, xlim=c(0,1100),
-           legend.labs=c("low", "high"), legend.title="NOTCH1",  
+           legend.labs=c("low", "high"), legend.title="NOTCH1",  xlab="month",
            palette=c("dodgerblue2", "orchid2"), 
            title="Kaplan-Meier Curve for COAD with mut", 
            risk.table.height=.3)
@@ -139,5 +139,39 @@ print(g, newpage = FALSE)
 dev.off()
 
 
+# 4yrs version
+df_surv <- exp %>% mutate(days=case_when(
+    event == 0  ~ days_to_last_follow_up,
+    TRUE ~ days_to_death)) 
+
+# 3年で打ち切り
+df_surv <- df_surv %>% mutate(event = ifelse(days>1500, 0, event)) 
+df_surv <- df_surv %>% mutate(days = ifelse(days>1500, 1500, days)) 
+
+# KM WT
+sfit <- survfit(Surv(days, event) ~ NOTCH_half, data=df_surv[df_surv$BRAF_mut=="WT",])
+summary(sfit)
+g <- ggsurvplot(sfit, conf.int=FALSE, pval=TRUE, risk.table=TRUE, xscale = "d_m" ,break.time.by=365.25*0.5, xlim=c(0,1500),
+           legend.labs=c("low", "high"), legend.title="NOTCH1",  xlab="month",
+           palette=c("dodgerblue2", "orchid2"), 
+           title="Kaplan-Meier Curve for COAD", 
+           risk.table.height=.3)
+
+png("survival_NOTCH1_wt_4yrs_final.png")
+print(g, newpage = FALSE)
+dev.off()
 
 
+# KM mut
+sfit <- survfit(Surv(days, event) ~ NOTCH_half, data=df_surv[df_surv$BRAF_mut=="p.V600E",])
+summary(sfit)
+
+g <- ggsurvplot(sfit, conf.int=FALSE, pval=TRUE, risk.table=TRUE, xscale = "d_m" ,break.time.by=365.25*0.5, xlim=c(0,1500),
+           legend.labs=c("low", "high"), legend.title="NOTCH1",  xlab="month",
+           palette=c("dodgerblue2", "orchid2"), 
+           title="Kaplan-Meier Curve for COAD with mut", 
+           risk.table.height=.3)
+
+png("survival_NOTCH1_mt_4yrs_final.png")
+print(g, newpage = FALSE)
+dev.off()
