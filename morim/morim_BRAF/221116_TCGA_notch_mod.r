@@ -101,7 +101,7 @@ coad.merge <- inner_join(coad.merge, meta, by=c("submitter_id"="cases.0.submitte
 library(ggsignif)
 
 # Expression
-exp <- fread("final.tsv")
+exp <- fread("final.tsv") ## ＊もともとfull_joinしてるのでWTも含む
 # exp$BRAF_mut
 
 df <- coad.merge %>% full_join(exp, by="submitter_id")
