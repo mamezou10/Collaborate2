@@ -1,0 +1,11 @@
+(shirokane)
+
+conda create env -f=~/kb_test/kb.yaml(?)
+
+## 元々自作のindexは使えなかった
+## 小嶋先生にもらったindexたちはindex.idx以外はそのまま使える
+## index.idxはコピー時に破損してそうなので、直接読みに行ってる
+## 後で手元にコピーしておく予定(md5sum check要)
+## indexのbuildに問題があったかも
+qsub ~/scripts/q221129_tsuji_final.sh
+qsub ~/scripts/q221129_tsuji_final2.sh
