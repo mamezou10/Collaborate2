@@ -15,8 +15,6 @@ c_d7 = sc.read_10x_h5("/mnt/Daisy/tsuji_sc_mouse/F4710_220927_122647_cellranger/
 c_d10 = sc.read_10x_h5("/mnt/Daisy/tsuji_sc_mouse/F4710_220927_122647_cellranger/CMT167_1G2_D10_5DE/outs/filtered_feature_bc_matrix.h5")
 ko_d7 = sc.read_10x_h5("/mnt/Daisy/tsuji_sc_mouse/F4710_220927_122647_cellranger/CMT167_DK1_D7_5DE/outs/filtered_feature_bc_matrix.h5")
 
-
-
 ## preprocess
 samples = [c_d4, c_d7, c_d10, ko_d7 ]
 sampleNames = ["Day4", "Day7", "Day10", "KO_Day7"]
@@ -101,16 +99,65 @@ mcherry.index = adata.obs_names
 #mcherry.index = [str[:16] for str in adata.obs_names.tolist()]
 
 
-
-
 adatas.obs["sampleID"] = [str[:18] for str in adatas.obs_names.tolist()] 
 adatas.obs["sampleID"] = adatas.obs["sampleID"].str.cat(adatas.obs["sample"], sep="-")
 
 kari = pd.merge(adatas.obs, mcherry, how="left", left_on="sampleID", right_index=True )
 kari = kari.fillna({"mCherry":0})
-
 adatas.obs = kari
-
 sc.pl.umap(adatas, color=["total_counts", "sample", "Tmem119", "Ptprc", "Cd68", "Csf1r", "mCherry"], save="various.png")
 
 
+##  前のmicrogliaクラスタがどこにいるか
+data_dir = "/mnt/Donald/tsuji/mouse_sc/221116/"
+adata=sc.read_h5ad(f'{data_dir}/adata_total_cellClass1.h5')
+adata = adata[adata.obs["cellClass1"]=="cellClass1-1"].copy()
+adata.X = adata.layers["count"].copy()
+sc.pp.normalize_total(adata, target_sum=1e4)
+sc.pp.log1p(adata)
+sc.pp.scale(adata, max_value=10)
+sc.tl.pca(adata)
+sc.pp.neighbors(adata, n_neighbors=10, n_pcs=40, use_rep="Scanorama")
+sc.tl.umap(adata)
+sc.tl.leiden(adata )
+sc.pl.umap(adata, color="leiden")
+adata.obs["sampleID"] = [str[:18] for str in adata.obs_names.tolist()] 
+adata.obs["sampleID"] = adata.obs["sampleID"].str.cat(adata.obs["sample"], sep="-")
+
+adatas.obs = pd.merge(kari, pd.DataFrame(adata.obs), how="left", left_on="sampleID", right_on="sampleID")
+sc.pl.umap(adatas, color=["n_genes_x"])
+
+## 前の全体クラスタがどこにいるか
+adata=sc.read_h5ad(f'{data_dir}/adata_total_scanorama.h5')
+adata.obs["sampleID"] = [str[:18] for str in adata.obs_names.tolist()] 
+adata.obs["sampleID"] = adata.obs["sampleID"].str.cat(adata.obs["sample"], sep="-")
+sc.tl.leiden(adata, resolution=0.5, key_added="coarse_leiden")
+adatas.obs = pd.merge(pd.DataFrame(adatas.obs), pd.DataFrame(adata.obs), how="left", left_on="sampleID", right_on="sampleID")
+
+
+adata=sc.read_h5ad(f'{data_dir}/adata_total_cellClass1.h5')
+adata.obs["sampleID"] = [str[:18] for str in adata.obs_names.tolist()] 
+adata.obs["sampleID"] = adata.obs["sampleID"].str.cat(adata.obs["sample"], sep="-")
+adatas.obs = pd.merge(pd.DataFrame(adatas.obs), pd.DataFrame(adata.obs[["cellClass1", "sampleID"]]), how="left", left_on="sampleID", right_on="sampleID")
+
+
+sc.pl.umap(adatas, color=["leiden_y", "coarse_leiden_y", "cellClass1_y"], alpha=0.7, legend_loc="on data", save="duplicate_cluster.png")
+
+
+adatas.obs_names = kari.index
+
+obs = adatas.obs[["sampleID", "sample", "cellClass1_y", "n_genes", "n_genes_by_counts", "total_counts", "total_counts_mt", "pct_counts_mt", "mCherry",  "leiden_x",     "leiden_y",          "clusters_x",         "coarse_leiden_x",          "leiden"]]
+obs.columns =    ["sampleID", "sample", "cellClass1_y", "n_genes", "n_genes_by_counts", "total_counts", "total_counts_mt", "pct_counts_mt", "mCherry",  "leiden_total", "leiden_cellClass1", "clusters_scanorama", "coarse_leiden_single_cell", "leiden_single_cell"]
+
+adatas.obs = obs
+
+adatas = adatas[1:,:].copy()
+adatas.obs["mCherry"] = list(adatas.obs["mCherry"])
+
+adatas.write_h5ad("adata_duplicate.h5")
+
+
+
+
+
+# sc.pl.umap(adatas, color=["leiden_y", "coarse_leiden_y", "leiden", "leiden_x", "clusters_x"], alpha=0.7, legend_loc="on data")
