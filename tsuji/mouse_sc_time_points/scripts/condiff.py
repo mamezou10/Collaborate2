@@ -1,6 +1,6 @@
 import torch
 import scanpy as sc
-from . import commons, workflow
+import commons, workflow
 import pandas as pd
 import numpy as np
 
@@ -26,9 +26,10 @@ def make_deg_cdiff_df(source_cells, jac_adata, cluster, target_scores, gene_scor
     jac_adata.obs['diff_pop'][source_cells] = 'Source'
     jac_adata.obs['diff_pop'][top_diff_cells] = 'Target'
     sc.tl.rank_genes_groups(jac_adata, 'diff_pop', groups=['Target'], reference='Source', method=method)
+    #import pdb; pdb.set_trace()
     deg_df = commons.extract_deg_df(jac_adata, 'Target')
-    deg_df['score'] = gene_scores[deg_df.index]
-    return deg_df
+    deg_df['score'] = gene_scores[np.intersect1d(deg_df.index, gene_scores.index)]
+    return deg_df, jac_adata
 
 
 def make_specifc_cond_tensor(adata, cond):
