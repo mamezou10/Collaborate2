@@ -8,7 +8,7 @@ from tkinter import N
 
 data_dir = "/mnt/Donald/tsuji/mouse_sc/221207/"
 
-out_dir = "/mnt/Donald/tsuji/mouse_sc/221215_2/"
+out_dir = "/mnt/Donald/tsuji/mouse_sc/221216/"
 os.makedirs(out_dir, exist_ok=True)
 os.chdir(out_dir)
 
@@ -210,12 +210,13 @@ gene_scores = pd.Series(cluster_adata.layers['norm_cond_vel_diff'].mean(axis=0),
 source_cells = cluster_adata.obs_names
 importlib.reload(condiff)
 deg_cdiff_df, jac_adata = condiff.make_deg_cdiff_df(source_cells, est_adata_tmp, cluster, est_adata_tmp.obs[f'cdiff{cluster}_target'], gene_scores, q=0.8)
-sc.tl.rank_genes_groups(est_adata_tmp, 'sample', groups=['KO_Day7'], reference='Day7')
-deg_cdiff_df = commons.extract_deg_df(est_adata_tmp, 'KO_Day7')
+
+##########sc.tl.rank_genes_groups(est_adata_tmp, 'sample', groups=['KO_Day7'], reference='Day7')
+##########deg_cdiff_df = commons.extract_deg_df(est_adata_tmp, 'KO_Day7')
 #deg_cdiff_df['score'] = gene_scores[deg_cdiff_df.index]
 deg_cdiff_df['score'] = gene_scores[np.intersect1d(deg_cdiff_df.index, gene_scores.index)]
-deg_cdiff_df = deg_cdiff_df.query('logfoldchanges > 0')
-#deg_cdiff_df = deg_cdiff_df.query('pvals < 0.01')
+###########deg_cdiff_df = deg_cdiff_df.query('logfoldchanges > 0')
+deg_cdiff_df = deg_cdiff_df.query('pvals < 0.01')
 deg_cdiff_df.sort_values('score', ascending=False).to_csv(f'{out_dir}/{cluster}_score_for_bar.csv')
 top_genes = deg_cdiff_df.sort_values('score', ascending=False).index[:10]
 bottom_genes = deg_cdiff_df.sort_values('score', ascending=True).index[:10]

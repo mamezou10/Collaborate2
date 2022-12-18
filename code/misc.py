@@ -1,3 +1,6 @@
+import numpy as np
+import pandas as pd
+
 def transform_exp(adata):
     sc.pp.filter_cells(adata_ref, min_genes=100)
     sc.pp.filter_genes(adata_ref, min_cells=100)

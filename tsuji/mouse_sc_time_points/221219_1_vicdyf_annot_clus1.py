@@ -8,7 +8,7 @@ from tkinter import N
 
 data_dir = "/mnt/Donald/tsuji/mouse_sc/221207/"
 
-out_dir = "/mnt/Donald/tsuji/mouse_sc/221215_2/"
+out_dir = "/mnt/Donald/tsuji/mouse_sc/221219/"
 os.makedirs(out_dir, exist_ok=True)
 os.chdir(out_dir)
 
@@ -199,7 +199,7 @@ sc.pl.umap(
 
 
 # cdiff cluster4から条件によって違いの大きそうな遺伝子
-cluster="4"
+cluster="1"
 est_adata_tmp = est_adata.copy()
 est_adata_tmp.X = est_adata_tmp.layers["count"]
 sc.pp.normalize_total(est_adata_tmp)
@@ -210,12 +210,13 @@ gene_scores = pd.Series(cluster_adata.layers['norm_cond_vel_diff'].mean(axis=0),
 source_cells = cluster_adata.obs_names
 importlib.reload(condiff)
 deg_cdiff_df, jac_adata = condiff.make_deg_cdiff_df(source_cells, est_adata_tmp, cluster, est_adata_tmp.obs[f'cdiff{cluster}_target'], gene_scores, q=0.8)
-sc.tl.rank_genes_groups(est_adata_tmp, 'sample', groups=['KO_Day7'], reference='Day7')
-deg_cdiff_df = commons.extract_deg_df(est_adata_tmp, 'KO_Day7')
+
+##########sc.tl.rank_genes_groups(est_adata_tmp, 'sample', groups=['KO_Day7'], reference='Day7')
+##########deg_cdiff_df = commons.extract_deg_df(est_adata_tmp, 'KO_Day7')
 #deg_cdiff_df['score'] = gene_scores[deg_cdiff_df.index]
 deg_cdiff_df['score'] = gene_scores[np.intersect1d(deg_cdiff_df.index, gene_scores.index)]
-deg_cdiff_df = deg_cdiff_df.query('logfoldchanges > 0')
-#deg_cdiff_df = deg_cdiff_df.query('pvals < 0.01')
+###########deg_cdiff_df = deg_cdiff_df.query('logfoldchanges > 0')
+deg_cdiff_df = deg_cdiff_df.query('pvals < 0.01')
 deg_cdiff_df.sort_values('score', ascending=False).to_csv(f'{out_dir}/{cluster}_score_for_bar.csv')
 top_genes = deg_cdiff_df.sort_values('score', ascending=False).index[:10]
 bottom_genes = deg_cdiff_df.sort_values('score', ascending=True).index[:10]
@@ -236,6 +237,9 @@ plt.savefig(f'{out_dir}/{cluster}_bar.png');plt.close('all')
 
 ## それをGSEA
 import gseapy
+gene_scores=gene_scores.sort_values(ascending=False)
+deg_cdiff_df = pd.DataFrame({"names":gene_scores.index, "score":gene_scores})
+
 deg_cdiff_df = pd.merge(deg_cdiff_df, mouse2human, left_on="names", right_on="mouse", how="left")
 deg_cdiff_df.loc[deg_cdiff_df.mouse.isna(),"human"] = [i.upper() for i in deg_cdiff_df.loc[deg_cdiff_df.mouse.isna(),"names"] ]
 cdiff_df = pd.DataFrame({'gene': deg_cdiff_df.human, 'scores': deg_cdiff_df.score}).dropna().sort_values("scores", ascending=False)
@@ -311,7 +315,17 @@ for term in pre_res.res2d.sort_values('pval').head(n=10).index:
          **pre_res.results[term],
          ofname=f'{out_dir}/gsea_lt_{cluster}/{term}_gsea.png')
 
+term="CD47"
+gseapy.gseaplot(rank_metric=pre_res.ranking,
+        term=term,
+        **pre_res.results[term],
+        ofname=f'{out_dir}/gsea_lt_{cluster}/{term}_gsea.png')
 
+term="CD24"
+gseapy.gseaplot(rank_metric=pre_res.ranking,
+        term=term,
+        **pre_res.results[term],
+        ofname=f'{out_dir}/gsea_lt_{cluster}/{term}_gsea.png')
 
 
 
